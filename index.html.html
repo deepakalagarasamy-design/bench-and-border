@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bench & Border — Life Science Careers</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background: #EEEAE0;
+    display: flex;
+    justify-content: center;
+    padding: 24px 10px;
+    min-height: 100vh;
+  }
+  :root {
+    --paper: #FAFAF6; --paper-dim: #F1EFE7; --ink: #1A2420; --ink-soft: #55645D;
+    --teal: #1F6F5C; --teal-deep: #123F34; --navy: #2C4869; --navy-deep: #1B2E45;
+    --gold: #B98A1E; --line: #D8D3C4; --card: #FFFFFF;
+  }
+  .bb-app {
+    width: 100%; max-width: 440px; background: var(--paper);
+    border-radius: 22px; border: 1px solid var(--line);
+    box-shadow: 0 18px 40px rgba(20,30,26,0.18);
+    overflow: hidden; display: flex; flex-direction: column; min-height: 680px;
+    color: var(--ink);
+  }
+  .bb-mast { border-bottom: 3px solid var(--ink); padding: 18px 18px 14px; }
+  .bb-mast h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 24px; margin: 0; }
+  .bb-mast .sub { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 1px; margin-top: 3px; }
+  .bb-view { display: none; flex: 1; overflow-y: auto; padding-bottom: 8px; }
+  .bb-view.active { display: block; }
+  .bb-controls { padding: 16px 18px; border-bottom: 1px solid var(--line); background: var(--paper-dim); }
+  .bb-tabs { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+  .bb-tab { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; padding: 7px 12px 6px; border: 1px solid var(--ink); background: var(--paper); color: var(--ink); cursor: pointer; border-radius: 3px 3px 0 0; }
+  .bb-tab.active { background: var(--ink); color: var(--paper); }
+  .bb-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 11px; }
+  .bb-row label { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--ink-soft); width: 100%; }
+  .bb-input { flex: 1; min-width: 160px; font-family: 'Inter', sans-serif; font-size: 14px; padding: 9px 11px; border: 1px solid var(--line); background: var(--card); border-radius: 4px; color: var(--ink); }
+  .bb-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .bb-chip { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); cursor: pointer; color: var(--ink-soft); white-space: nowrap; }
+  .bb-chip.on { background: var(--teal); border-color: var(--teal); color: #fff; }
+  .bb-chip.star { border-color: var(--gold); color: var(--gold); font-weight: 500; }
+  .bb-chip.star.on { background: var(--gold); border-color: var(--gold); color: #fff; }
+  .bb-searchbtn { width: 100%; font-family: 'IBM Plex Mono', monospace; font-size: 13px; padding: 12px; background: var(--ink); color: var(--paper); border: none; border-radius: 6px; cursor: pointer; margin-top: 2px; }
+  .bb-searchbtn:disabled { opacity: 0.55; }
+  .bb-status { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--ink-soft); padding: 12px 18px 0; min-height: 18px; }
+  .bb-section-label { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-soft); padding: 16px 18px 8px; display: flex; justify-content: space-between; }
+  .bb-grid { display: flex; flex-direction: column; gap: 12px; padding: 0 18px 20px; }
+  .bb-card { background: var(--card); border: 1px solid var(--line); border-left: 5px solid var(--teal); border-radius: 6px; padding: 13px 14px 12px; display: flex; flex-direction: column; gap: 7px; }
+  .bb-card.de { border-left-color: var(--gold); }
+  .bb-card.us { border-left-color: var(--navy); }
+  .bb-card .stamp { font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; color: var(--ink-soft); display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+  .bb-card .stamp .badge { padding: 1px 7px; border-radius: 3px; font-weight: 500; color: #fff; background: var(--navy); }
+  .bb-card.de .stamp .badge { background: var(--gold); }
+  .bb-card .stamp .home { color: var(--teal-deep); font-weight: 600; }
+  .bb-card h3 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 16.5px; margin: 0; text-decoration: underline dotted var(--line); text-underline-offset: 4px; }
+  .bb-card .meta { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--ink-soft); }
+  .bb-card .why { font-size: 13px; }
+  .bb-card .foot { margin-top: auto; display: flex; justify-content: space-between; align-items: center; padding-top: 7px; border-top: 1px dashed var(--line); }
+  .bb-card a.view { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--navy-deep); text-decoration: none; font-weight: 500; }
+  .bb-card.de a.view { color: #8a6714; }
+  .bb-save { background: none; border: 1px solid var(--line); border-radius: 4px; width: 26px; height: 26px; cursor: pointer; font-size: 13px; color: var(--gold); }
+  .bb-save.on { background: var(--gold); color: #fff; border-color: var(--gold); }
+  .bb-empty { padding: 34px 18px; text-align: center; color: var(--ink-soft); font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; }
+  .bb-profile { padding: 18px; }
+  .bb-profile .pcard { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 16px; margin-bottom: 14px; }
+  .bb-profile h2 { font-family: 'Fraunces', serif; font-size: 17px; margin: 0 0 8px; }
+  .bb-profile p { font-size: 13px; color: var(--ink-soft); margin: 0 0 6px; }
+  .bb-keyfield { width: 100%; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 5px; margin-top: 8px; }
+  .bb-note { font-size: 11.5px; color: var(--ink-soft); margin-top: 6px; line-height: 1.5; }
+  .bb-savekeybtn { margin-top: 10px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; padding: 8px 14px; background: var(--teal); color: #fff; border: none; border-radius: 5px; cursor: pointer; }
+  .bb-nav { display: flex; border-top: 1px solid var(--line); background: var(--card); }
+  .bb-navbtn { flex: 1; background: none; border: none; padding: 10px 2px 8px; font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; color: var(--ink-soft); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .bb-navbtn .ic { font-size: 17px; }
+  .bb-navbtn.active { color: var(--teal-deep); font-weight: 600; }
+
+  /* fellowship static cards */
+  .bb-fcard { background: var(--card); border: 1px solid var(--line); border-left: 5px solid var(--navy); border-radius: 6px; padding: 13px 14px; margin: 0 18px 12px; }
+  .bb-fcard h3 { font-family: 'Fraunces', serif; font-size: 15.5px; margin: 0 0 4px; }
+  .bb-fcard p { font-size: 12.5px; color: var(--ink-soft); margin: 2px 0; }
+  .bb-fcard a { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--navy-deep); }
+  .bb-pathstep { display: flex; gap: 10px; padding: 0 18px 14px; }
+  .bb-pathstep .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--teal); margin-top: 5px; flex-shrink: 0; }
+  .bb-pathstep .txt strong { font-family: 'Fraunces', serif; font-size: 14.5px; }
+  .bb-pathstep .txt p { font-size: 12.5px; color: var(--ink-soft); margin: 3px 0 0; }
+
+  /* password gate */
+  .bb-gate { position: fixed; inset: 0; background: rgba(20,30,26,0.85); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 20px; }
+  .bb-gate-box { background: var(--paper); border-radius: 16px; padding: 28px 24px; max-width: 340px; width: 100%; text-align: center; font-family: 'Inter', sans-serif; }
+  .bb-gate-box h2 { font-family: 'Fraunces', serif; margin: 0 0 6px; }
+  .bb-gate-box p { font-size: 12.5px; color: var(--ink-soft); margin: 0 0 14px; }
+  .bb-gate-box input { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; font-size: 14px; margin-bottom: 10px; }
+  .bb-gate-box button { width: 100%; padding: 11px; background: var(--ink); color: var(--paper); border: none; border-radius: 6px; font-family: 'IBM Plex Mono', monospace; cursor: pointer; }
+  .bb-gate-err { color: #a33; font-size: 12px; min-height: 16px; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+
+<div class="bb-gate" id="bbGate">
+  <div class="bb-gate-box">
+    <h2 id="bbGateTitle">Set a password</h2>
+    <p id="bbGateSub">This protects the app on this device/browser. Choose something only you and Deepak know.</p>
+    <div class="bb-gate-err" id="bbGateErr"></div>
+    <input type="password" id="bbGatePw" placeholder="Password" autocomplete="off" />
+    <button id="bbGateBtn">Continue</button>
+  </div>
+</div>
+
+<div class="bb-app" id="bbApp" style="visibility:hidden">
+  <div class="bb-mast">
+    <h1>Bench &amp; Border</h1>
+    <div class="sub">Life-science careers · US ⇄ Germany</div>
+  </div>
+
+  <div class="bb-view active" id="view-search">
+    <div class="bb-controls">
+      <div class="bb-tabs" id="bbTabs">
+        <div class="bb-tab active" data-country="US">🇺🇸 US</div>
+        <div class="bb-tab" data-country="DE">🇩🇪 Germany</div>
+        <div class="bb-tab" data-country="BOTH">🌐 Both</div>
+      </div>
+      <div class="bb-row">
+        <label for="bbQuery">Role keywords</label>
+        <input class="bb-input" id="bbQuery" value="Research Associate, Associate Scientist" />
+      </div>
+      <div class="bb-row">
+        <label>Skill tags</label>
+        <div class="bb-chips" id="bbSkillChips"></div>
+      </div>
+      <div class="bb-row" id="bbLocRow">
+        <label id="bbLocLabel">Locations</label>
+        <div class="bb-chips" id="bbLocChips"></div>
+      </div>
+      <button class="bb-searchbtn" id="bbSearchBtn">Search openings →</button>
+    </div>
+    <div class="bb-status" id="bbStatus"></div>
+    <div class="bb-section-label">Results</div>
+    <div class="bb-grid" id="bbResultsGrid"></div>
+    <div class="bb-empty" id="bbEmptyMsg">No search yet — pick a country tab and search. Georgia is starred as home base.</div>
+  </div>
+
+  <div class="bb-view" id="view-news">
+    <div class="bb-controls">
+      <div class="bb-row">
+        <label for="bbNewsQuery">Topic</label>
+        <input class="bb-input" id="bbNewsQuery" value="CRISPR, immunology, cardiovascular research" />
+      </div>
+      <button class="bb-searchbtn" id="bbNewsBtn">Get latest news →</button>
+    </div>
+    <div class="bb-status" id="bbNewsStatus"></div>
+    <div class="bb-grid" id="bbNewsGrid"></div>
+    <div class="bb-empty" id="bbNewsEmpty">Pull the latest research and industry news in your field — trials, publications, funding, hiring trends.</div>
+  </div>
+
+  <div class="bb-view" id="view-phd">
+    <div class="bb-section-label"><span>Career path</span></div>
+    <div class="bb-pathstep"><div class="dot"></div><div class="txt"><strong>Now — MSc thesis</strong><p>Finishing at TUM in experimental cardiology, CRISPR/Cas9 work.</p></div></div>
+    <div class="bb-pathstep"><div class="dot"></div><div class="txt"><strong>Fork 1 — Industry</strong><p>Research Associate → Scientist I/II → Senior Scientist → Principal Scientist / Group Lead. Faster income, no PhD required, strong fit with her wet-lab skill set.</p></div></div>
+    <div class="bb-pathstep"><div class="dot"></div><div class="txt"><strong>Fork 2 — PhD route</strong><p>Funded PhD (3-4 yrs, Germany usually paid as a position not a "student") → Postdoc → either Industry Senior Scientist (with PhD premium) or Academic PI track.</p></div></div>
+    <div class="bb-pathstep"><div class="dot"></div><div class="txt"><strong>Fork 3 — Alternative science careers</strong><p>Medical Science Liaison, Regulatory Affairs, Clinical Research, or Science Policy — good options if she wants to stay close to science without the bench.</p></div></div>
+
+    <div class="bb-section-label"><span>Search live PhD openings</span></div>
+    <div class="bb-controls" style="border-top:1px solid var(--line)">
+      <div class="bb-row"><label for="bbPhdQuery">Field</label><input class="bb-input" id="bbPhdQuery" value="CRISPR, immunology, cardiovascular" /></div>
+      <div class="bb-tabs" id="bbPhdTabs">
+        <div class="bb-tab active" data-country="DE">🇩🇪 Germany</div>
+        <div class="bb-tab" data-country="US">🇺🇸 US</div>
+      </div>
+      <button class="bb-searchbtn" id="bbPhdBtn">Search funded PhD positions →</button>
+    </div>
+    <div class="bb-status" id="bbPhdStatus"></div>
+    <div class="bb-grid" id="bbPhdGrid"></div>
+
+    <div class="bb-section-label"><span>Standing fellowship programs</span></div>
+    <div class="bb-fcard">
+      <h3>DAAD Research Grants</h3>
+      <p>Germany's national funding body — supports doctoral research for international and returning students at German universities.</p>
+      <a href="https://www.daad.de/en/" target="_blank" rel="noopener">daad.de →</a>
+    </div>
+    <div class="bb-fcard">
+      <h3>Max Planck IMPRS Programs</h3>
+      <p>Fully-funded structured PhD tracks at Max Planck Institutes, several in immunology, molecular medicine and cell biology.</p>
+      <a href="https://www.maxplanckschools.org/" target="_blank" rel="noopener">maxplanckschools.org →</a>
+    </div>
+    <div class="bb-fcard">
+      <h3>Boehringer Ingelheim Fonds</h3>
+      <p>PhD fellowships for basic biomedical research in Europe and worldwide, including immunology and cardiovascular biology.</p>
+      <a href="https://www.bifonds.de/" target="_blank" rel="noopener">bifonds.de →</a>
+    </div>
+    <div class="bb-fcard">
+      <h3>EMBL PhD Programme</h3>
+      <p>Fully-funded international PhD program (Heidelberg and other EMBL sites) with strong molecular/cell biology tracks.</p>
+      <a href="https://www.embl.org/about/phd-programme/" target="_blank" rel="noopener">embl.org →</a>
+    </div>
+    <div class="bb-fcard">
+      <h3>Helmholtz Association PhD Positions</h3>
+      <p>Funded doctoral positions across Helmholtz centers, including Helmholtz-Zentrum Dresden-Rossendorf and HZ Munich, several in cardiovascular immunology right now.</p>
+      <a href="https://www.helmholtz.de/en/" target="_blank" rel="noopener">helmholtz.de →</a>
+    </div>
+    <div class="bb-fcard">
+      <h3>NIH Oxford-Cambridge Scholars (US route)</h3>
+      <p>Fully-funded PhD combining NIH labs with Oxford/Cambridge — relevant if she wants a US-linked biomedical PhD.</p>
+      <a href="https://oxcam.gpp.nih.gov/" target="_blank" rel="noopener">oxcam.gpp.nih.gov →</a>
+    </div>
+    <div class="bb-fcard">
+      <h3>Fulbright (Germany ⇄ US)</h3>
+      <p>Funds German-based researchers for graduate study or research stays in the US, and vice versa.</p>
+      <a href="https://www.fulbright.de/" target="_blank" rel="noopener">fulbright.de →</a>
+    </div>
+  </div>
+
+  <div class="bb-view" id="view-saved">
+    <div class="bb-section-label"><span>Saved roles</span><span id="bbSavedCount"></span></div>
+    <div class="bb-grid" id="bbSavedGrid"></div>
+    <div class="bb-empty" id="bbSavedEmpty">Nothing saved yet — star a result from Search to keep it here.</div>
+  </div>
+
+  <div class="bb-view" id="view-settings">
+    <div class="bb-profile">
+      <div class="pcard">
+        <h2>Candidate profile</h2>
+        <p><strong>Tharani Purushothaman</strong> · Munich, Germany</p>
+        <p>MSc Agricultural Biosciences, TUM (thesis: cardiology, CRISPR/Cas9) · BTech Biotechnology, Anna University (gold medalist)</p>
+        <p>Core skills: CRISPR/Cas9, immunology, cell biology, flow cytometry, qPCR, Western blot, genomics, cell culture</p>
+      </div>
+      <div class="pcard">
+        <h2>Home base</h2>
+        <p>Deepak is based in Peachtree City, GA — US searches flag Atlanta-area roles as "home base" matches.</p>
+      </div>
+      <div class="pcard">
+        <h2>Connection</h2>
+        <p>This app calls your Cloudflare Worker, not Anthropic directly — your real API key lives only on the Worker, never in this browser. Paste the Worker URL you deployed, and the access token you set for it.</p>
+        <input class="bb-keyfield" id="bbWorkerUrl" type="text" placeholder="https://your-worker.your-subdomain.workers.dev" autocomplete="off" />
+        <input class="bb-keyfield" id="bbAppToken" type="password" placeholder="App access token" autocomplete="off" />
+        <button class="bb-savekeybtn" id="bbApiKeyBtn">Save on this device</button>
+        <div class="bb-note" id="bbKeyStatus"></div>
+      </div>
+      <div class="pcard">
+        <h2>Password</h2>
+        <button class="bb-savekeybtn" id="bbResetPwBtn" style="background:#8a3b3b">Reset password on this device</button>
+        <div class="bb-note">Only affects this browser. She'll be asked to set a new one next load.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bb-nav">
+    <button class="bb-navbtn active" data-view="search"><span class="ic">🔍</span>Search</button>
+    <button class="bb-navbtn" data-view="news"><span class="ic">📰</span>News</button>
+    <button class="bb-navbtn" data-view="phd"><span class="ic">🎓</span>PhD</button>
+    <button class="bb-navbtn" data-view="saved"><span class="ic">★</span>Saved</button>
+    <button class="bb-navbtn" data-view="settings"><span class="ic">⚙</span>Settings</button>
+  </div>
+</div>
+
+<script>
+(function() {
+  // ---------- password gate ----------
+  const LS_PW = "bb_pw_hash";
+  async function sha256(text) {
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+  }
+  function showApp() { document.getElementById("bbGate").remove(); document.getElementById("bbApp").style.visibility = "visible"; }
+  function initGate() {
+    const existing = localStorage.getItem(LS_PW);
+    const title = document.getElementById("bbGateTitle");
+    const sub = document.getElementById("bbGateSub");
+    const btn = document.getElementById("bbGateBtn");
+    const pw = document.getElementById("bbGatePw");
+    const err = document.getElementById("bbGateErr");
+    if (existing) { title.textContent = "Enter password"; sub.textContent = "This device already has a password set."; }
+    btn.addEventListener("click", async () => {
+      const val = pw.value;
+      if (!val) { err.textContent = "Enter a password."; return; }
+      if (!existing) {
+        if (val.length < 4) { err.textContent = "Use at least 4 characters."; return; }
+        localStorage.setItem(LS_PW, await sha256(val));
+        showApp();
+      } else {
+        const hash = await sha256(val);
+        if (hash === existing) showApp();
+        else err.textContent = "Wrong password.";
+      }
+    });
+    pw.addEventListener("keydown", e => { if (e.key === "Enter") btn.click(); });
+  }
+  initGate();
+
+  document.getElementById("bbResetPwBtn").addEventListener("click", () => {
+    if (confirm("Reset the password on this device? You'll set a new one next time this page loads.")) {
+      localStorage.removeItem(LS_PW);
+      alert("Password cleared. Reload the page to set a new one.");
+    }
+  });
+
+  // ---------- app state ----------
+  const SKILLS = ["CRISPR/Cas9", "Immunology", "Cell Biology", "Genomics", "Flow Cytometry", "qPCR", "Cardiovascular disease"];
+  const LOC_US = ["★ Atlanta, GA (home base)", "Boston/Cambridge MA", "San Diego CA", "SF Bay Area CA", "Research Triangle Park NC", "Any US location"];
+  const LOC_DE = ["Munich", "Berlin", "Heidelberg", "Any Germany location"];
+  let state = { country: "US", skills: new Set(["CRISPR/Cas9", "Immunology"]), locsUS: new Set(["★ Atlanta, GA (home base)"]), locsDE: new Set(["Munich"]) };
+  const $ = id => document.getElementById(id);
+
+  function getWorkerUrl() { return localStorage.getItem("bb_worker_url") || null; }
+  function getAppToken() { return localStorage.getItem("bb_app_token") || null; }
+
+  $("bbApiKeyBtn").addEventListener("click", () => {
+    const url = $("bbWorkerUrl").value.trim();
+    const token = $("bbAppToken").value.trim();
+    if (url) localStorage.setItem("bb_worker_url", url); else localStorage.removeItem("bb_worker_url");
+    if (token) localStorage.setItem("bb_app_token", token); else localStorage.removeItem("bb_app_token");
+    $("bbKeyStatus").textContent = url ? "Saved on this device." : "Worker URL cleared.";
+  });
+  (function initKeyField(){
+    const u = getWorkerUrl();
+    if (u) { $("bbWorkerUrl").value = u; $("bbKeyStatus").textContent = "Connected to a Worker on this device."; }
+  })();
+
+  function renderChips() {
+    const skillWrap = $("bbSkillChips"); skillWrap.innerHTML = "";
+    SKILLS.forEach(s => {
+      const c = document.createElement("div");
+      c.className = "bb-chip" + (state.skills.has(s) ? " on" : "");
+      c.textContent = s;
+      c.onclick = () => { state.skills.has(s) ? state.skills.delete(s) : state.skills.add(s); renderChips(); };
+      skillWrap.appendChild(c);
+    });
+    const locWrap = $("bbLocChips"); const locLabel = $("bbLocLabel"); locWrap.innerHTML = "";
+    let lists = [];
+    if (state.country === "US") { lists = [["US", LOC_US, state.locsUS]]; locLabel.textContent = "Locations (US)"; }
+    else if (state.country === "DE") { lists = [["DE", LOC_DE, state.locsDE]]; locLabel.textContent = "Locations (Germany)"; }
+    else { lists = [["US", LOC_US, state.locsUS], ["DE", LOC_DE, state.locsDE]]; locLabel.textContent = "Locations (US + Germany)"; }
+    lists.forEach(([tag, arr, set]) => {
+      arr.forEach(loc => {
+        const c = document.createElement("div");
+        const isHome = loc.indexOf("★") === 0;
+        c.className = "bb-chip" + (set.has(loc) ? " on" : "") + (isHome ? " star" : "");
+        c.textContent = (tag === "DE" ? "🇩🇪 " : (isHome ? "" : "🇺🇸 ")) + loc;
+        c.onclick = () => { set.has(loc) ? set.delete(loc) : set.add(loc); renderChips(); };
+        locWrap.appendChild(c);
+      });
+    });
+  }
+  $("bbTabs").addEventListener("click", e => {
+    const tab = e.target.closest(".bb-tab"); if (!tab) return;
+    document.querySelectorAll("#bbTabs .bb-tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active"); state.country = tab.dataset.country; renderChips();
+  });
+  let phdCountry = "DE";
+  $("bbPhdTabs").addEventListener("click", e => {
+    const tab = e.target.closest(".bb-tab"); if (!tab) return;
+    document.querySelectorAll("#bbPhdTabs .bb-tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active"); phdCountry = tab.dataset.country;
+  });
+
+  document.querySelectorAll(".bb-navbtn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".bb-navbtn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".bb-view").forEach(v => v.classList.remove("active"));
+      btn.classList.add("active"); $("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  function escapeHtml(s) { return (s || "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  function jobCardHTML(job, saveKey, isSaved) {
+    const cls = job.country === "DE" ? "de" : "us";
+    const badge = job.country === "DE" ? "GERMANY" : "UNITED STATES";
+    const homeTag = (job.location && /atlanta|georgia|peachtree/i.test(job.location)) ? '<span class="home">★ HOME BASE</span>' : '';
+    return `<div class="bb-card ${cls}">
+      <div class="stamp"><span>${escapeHtml(job.source || 'web')}</span>${homeTag}<span class="badge">${badge}</span></div>
+      <h3>${escapeHtml(job.title)}</h3>
+      <div class="meta">${escapeHtml(job.company)} · ${escapeHtml(job.location)}</div>
+      <div class="why">${escapeHtml(job.whyMatch || '')}</div>
+      <div class="foot">
+        <a class="view" href="${escapeHtml(job.url)}" target="_blank" rel="noopener">View posting ↗</a>
+        <button class="bb-save ${isSaved ? 'on' : ''}" data-key="${escapeHtml(saveKey)}" title="Save">★</button>
+      </div>
+    </div>`;
+  }
+
+  function newsCardHTML(item) {
+    return `<div class="bb-card us" style="border-left-color: var(--teal)">
+      <div class="stamp"><span>${escapeHtml(item.source || 'web')}</span><span class="badge" style="background:var(--teal)">${escapeHtml(item.date || '')}</span></div>
+      <h3>${escapeHtml(item.headline)}</h3>
+      <div class="why">${escapeHtml(item.summary || '')}</div>
+      <div class="foot"><a class="view" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">Read source ↗</a></div>
+    </div>`;
+  }
+
+  // ---------- saved (localStorage) ----------
+  function getSaved() { try { return JSON.parse(localStorage.getItem("bb_saved") || "{}"); } catch (e) { return {}; } }
+  function setSaved(obj) { localStorage.setItem("bb_saved", JSON.stringify(obj)); }
+  function renderSaved() {
+    const saved = getSaved(); const keys = Object.keys(saved);
+    $("bbSavedCount").textContent = keys.length ? keys.length + " saved" : "";
+    $("bbSavedEmpty").style.display = keys.length ? "none" : "block";
+    $("bbSavedGrid").innerHTML = keys.map(k => jobCardHTML(saved[k], k, true)).join("");
+  }
+  function toggleSave(job, key) {
+    const saved = getSaved();
+    if (saved[key]) delete saved[key]; else saved[key] = job;
+    setSaved(saved); renderSaved(); renderResults(lastResults);
+  }
+  document.addEventListener("click", e => {
+    const btn = e.target.closest(".bb-save"); if (!btn) return;
+    const key = btn.dataset.key; const saved = getSaved();
+    const job = saved[key] || lastResults.find(j => keyFor(j) === key);
+    if (job) toggleSave(job, key);
+  });
+  function keyFor(j) { return 'job:' + btoa(unescape(encodeURIComponent(j.url || (j.company + j.title)))).slice(0, 60); }
+
+  let lastResults = [];
+  function renderResults(jobs) {
+    lastResults = jobs; const grid = $("bbResultsGrid"); const empty = $("bbEmptyMsg");
+    if (!jobs || !jobs.length) { grid.innerHTML = ""; empty.style.display = "block"; return; }
+    empty.style.display = "none"; const saved = getSaved();
+    grid.innerHTML = jobs.map(j => jobCardHTML(j, keyFor(j), !!saved[keyFor(j)])).join("");
+  }
+
+  // ---------- Claude API calls ----------
+  async function callClaudeRaw(prompt) {
+    const workerUrl = getWorkerUrl();
+    if (!workerUrl) throw new Error("Set your Worker URL in Settings first");
+    const headers = { "Content-Type": "application/json" };
+    const token = getAppToken();
+    if (token) headers["x-app-token"] = token;
+    const response = await fetch(workerUrl, {
+      method: "POST", headers,
+      body: JSON.stringify({ max_tokens: 1200, messages: [{ role: "user", content: prompt }], tools: [{ type: "web_search_20250305", name: "web_search" }] })
+    });
+    const data = await response.json();
+    if (data.error) throw new Error(typeof data.error === "string" ? data.error : (data.error.message || "API error"));
+    const textBlocks = (data.content || []).filter(b => b.type === "text").map(b => b.text);
+    const combined = textBlocks.join("\n").trim().replace(/```json/g, "").replace(/```/g, "").trim();
+    const match = combined.match(/\[[\s\S]*\]/);
+    if (!match) return [];
+    try { return JSON.parse(match[0]); } catch (e) { return []; }
+  }
+
+  async function callJobs(country) {
+    const skillList = Array.from(state.skills).join(", ") || "molecular biology, immunology, cell biology";
+    const query = $("bbQuery").value.trim() || "Research Associate";
+    let locList = country === "US" ? Array.from(state.locsUS) : Array.from(state.locsDE);
+    if (!locList.length) locList = country === "US" ? ["Any US location"] : ["Any Germany location"];
+    locList = locList.map(l => l.replace("★ ", ""));
+    const homeNote = country === "US" ? " If any strong match is in the Atlanta, Georgia metro area (including Peachtree City), mention that explicitly in whyMatch." : "";
+    const prompt = `Search the web right now for real, currently live job openings in ${country === 'US' ? 'the United States' : 'Germany'} for a life-sciences candidate.
+Candidate: MSc Agricultural Biosciences (TUM, thesis in experimental cardiology/CRISPR-Cas9), BTech Biotechnology, experience in ${skillList}, cell culture, flow cytometry, qPCR, Western blot, genomics. Entry-to-mid level, targeting Research Associate / Associate Scientist / Scientist I roles at biotech, pharma, or CRO.
+Role keywords: ${query}
+Preferred locations: ${locList.join(" OR ")}${homeNote}
+Search LinkedIn, Indeed, BioSpace, EURES, StepStone, Xing, company sites. Only include listings actually found via search with a real URL.
+Return ONLY a raw JSON array of up to 6 objects: [{"title":"...","company":"...","location":"...","country":"${country}","source":"...","url":"https://...","whyMatch":"one short sentence"}]`;
+    const arr = await callClaudeRaw(prompt);
+    return arr.map(j => ({ ...j, country }));
+  }
+
+  $("bbSearchBtn").addEventListener("click", async () => {
+    const btn = $("bbSearchBtn"); const status = $("bbStatus");
+    btn.disabled = true; status.textContent = "Searching live postings — 15-30 seconds...";
+    $("bbEmptyMsg").style.display = "none"; $("bbResultsGrid").innerHTML = "";
+    try {
+      let jobs = [];
+      if (state.country === "BOTH") { const [us, de] = await Promise.all([callJobs("US"), callJobs("DE")]); jobs = [...us, ...de]; }
+      else jobs = await callJobs(state.country);
+      renderResults(jobs);
+      status.textContent = jobs.length ? `Found ${jobs.length} live listing${jobs.length === 1 ? '' : 's'}.` : "No matches — try broader terms.";
+    } catch (e) { status.textContent = "Search failed: " + e.message; renderResults([]); }
+    finally { btn.disabled = false; }
+  });
+
+  // ---------- news ----------
+  $("bbNewsBtn").addEventListener("click", async () => {
+    const btn = $("bbNewsBtn"); const status = $("bbNewsStatus");
+    btn.disabled = true; status.textContent = "Pulling latest news — 15-30 seconds...";
+    $("bbNewsEmpty").style.display = "none"; $("bbNewsGrid").innerHTML = "";
+    try {
+      const topic = $("bbNewsQuery").value.trim() || "CRISPR, immunology, cardiovascular research";
+      const prompt = `Search the web for the most recent news (last 30 days if possible) in: ${topic}. Focus on clinical trial results, major publications, biotech funding, and hiring trends relevant to a life-sciences researcher working in immunology, CRISPR gene editing, and cardiovascular disease.
+Return ONLY a raw JSON array of up to 6 objects: [{"headline":"short original headline in your own words, not copied from source","summary":"2-3 sentence plain-language summary, paraphrased, not a quote","source":"publication name","date":"e.g. June 2026","url":"https://..."}]`;
+      const items = await callClaudeRaw(prompt);
+      $("bbNewsGrid").innerHTML = items.map(newsCardHTML).join("");
+      $("bbNewsEmpty").style.display = items.length ? "none" : "block";
+      status.textContent = items.length ? `${items.length} update${items.length === 1 ? '' : 's'} found.` : "Nothing found — try a different topic.";
+    } catch (e) { status.textContent = "Search failed: " + e.message; }
+    finally { btn.disabled = false; }
+  });
+
+  // ---------- PhD search ----------
+  $("bbPhdBtn").addEventListener("click", async () => {
+    const btn = $("bbPhdBtn"); const status = $("bbPhdStatus");
+    btn.disabled = true; status.textContent = "Searching funded PhD positions — 15-30 seconds...";
+    $("bbPhdGrid").innerHTML = "";
+    try {
+      const field = $("bbPhdQuery").value.trim() || "CRISPR, immunology, cardiovascular";
+      const prompt = `Search the web right now for real, currently open, FUNDED PhD positions (not self-funded, must include salary/stipend or DFG/Helmholtz/Max Planck/university funding) in ${phdCountry === 'DE' ? 'Germany' : 'the United States'} in the field of: ${field}. Candidate has an MSc in Agricultural Biosciences (TUM) with CRISPR/Cas9 and cardiology research experience, and a BTech in Biotechnology.
+Only include positions found via search with a real, working application URL.
+Return ONLY a raw JSON array of up to 6 objects: [{"title":"...","company":"institution name","location":"city, country","country":"${phdCountry}","source":"e.g. university site / Nature Careers","url":"https://...","whyMatch":"one short sentence on fit"}]`;
+      const arr = await callClaudeRaw(prompt);
+      const jobs = arr.map(j => ({ ...j, country: phdCountry }));
+      $("bbPhdGrid").innerHTML = jobs.map(j => jobCardHTML(j, keyFor(j), !!getSaved()[keyFor(j)])).join("");
+      status.textContent = jobs.length ? `Found ${jobs.length} funded position${jobs.length === 1 ? '' : 's'}.` : "No current matches — try a broader field.";
+    } catch (e) { status.textContent = "Search failed: " + e.message; }
+    finally { btn.disabled = false; }
+  });
+
+  renderChips();
+  renderSaved();
+})();
+</script>
+</body>
+</html>
